@@ -18,8 +18,8 @@ the Boss level to end the game.
 
 ## Traps
 - Fireball: Shoots fireballs continuously in a straight line.
-- Lightning trap: Activates periodically between two walls, requiring precise timing to avoid.
-- Spike trap: Activates at regular intervals on the ground, posing a threat to the player's movement.
+- Lightning trap: Activates periodically between two walls.
+- Spike trap: Activates at regular intervals on the ground.
 
 ## levels
 - The game consists of 3 Levels, each with its own set of challenges and enemies. As of now, Level 1 is implemented with the following details:
