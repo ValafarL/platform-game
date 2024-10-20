@@ -18,6 +18,7 @@ private:
 	Stage2 stage2;
 	Stage3 stage3;
 	GameState gameState;
+	int stateChanged = 0;
 	sf::RenderWindow window;
 	Menu menu;
 public:
@@ -27,5 +28,6 @@ public:
 	void update();
 	void render();
 	void run();
+	void changeStage();
 };
 

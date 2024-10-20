@@ -8,7 +8,7 @@ EnemyWarrior::EnemyWarrior(sf::RenderWindow* window, int posX, int posY, int pat
 	body.setColor(sf::Color::Red);
 	life = 3;
 	speed = 5.0;
-	damage = 0;
+	damage = 1;
 	attackCooldown = 1;
 	attackDuration = 0.5;
 	attackRange = 75;

@@ -13,7 +13,7 @@ Fireball::Fireball(sf::RenderWindow* window, bool side, int startX, int endX, in
 		speed = -13.f;
 	}
 	char nome[50] = "";
-	damage = 0;
+	damage = 1;
 	initTexture(nome);
 	body.setColor(sf::Color::Yellow);
 	hit = false;
@@ -34,13 +34,13 @@ void Fireball::update()
 	if (side == true && body.getPosition().x >= endX)
 	{
 		hit = false;
-		damage = 0;
+		damage = 1;
 		body.setPosition(startX, body.getPosition().y);
 	}
 	if (side == false && body.getPosition().x <= endX)
 	{
 		hit = false;
-		damage = 0;
+		damage = 1;
 		body.setPosition(startX, body.getPosition().y);
 	}
 }
@@ -50,7 +50,11 @@ int Fireball::getDamage()
 	return damage;
 }
 
-void Fireball::setHit()
+void Fireball::handleCollision(Player* obj)
 {
+	if (!hit) {
+		obj->damageTaken(damage);
+	}
 	hit = true;
 }
+

@@ -159,7 +159,6 @@ void Player::isJumping()
 		body.move(sf::Vector2f(0.f, -vJump));
 		onGround = false;
 		vJump -= vGravity;
-		//jumpingTimer.restart();
 	}
 	else
 	{
@@ -176,13 +175,6 @@ void Player::damageTaken(int damage)
 void Player::dealDamageTo(sf::Sprite* body2)
 {
 }
-
-/*
-void Player::setLife(int cLife)
-{
-	life = cLife;
-}
-*/
 
 void Player::setAttackingHit(bool hit)
 {
@@ -237,13 +229,6 @@ void Player::jumpCollision(sf::Sprite *body2)
 		}
 	}
 }
-/*
-bool Player::getJumping()
-{
-	return jumping;
-}
-*/
-
 bool Player::getAttackingHit()
 {
 	return attackHit;

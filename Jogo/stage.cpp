@@ -110,3 +110,8 @@ void Stage::setGameState(GameState* gameState)
 {
     this->gameState = gameState;
 }
+
+void Stage::setPlayerPosition(int x, int y)
+{
+    player->getBody()->setPosition(x, y);
+}

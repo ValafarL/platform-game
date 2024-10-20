@@ -37,6 +37,6 @@ public:
 	void render();
 	void update();
 	void setGameState(GameState* gameState);
-
+	void setPlayerPosition(int x, int y);
 };
 

@@ -54,13 +54,11 @@ public:
 	void isJumping();
 	
 	void setWindow(sf::RenderWindow* pWindow);
-	//void setLife(int cLife);
 	void setAttackingHit(bool hit);
 
 	int getLife();
 	int getDamage();
 	bool getAttacking();
-	//bool getJumping();
 	bool getAttackingHit();
 	bool getEnterPortal();
 

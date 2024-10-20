@@ -16,6 +16,6 @@ public:
 	~Fireball();
 	void update();
 	int getDamage();
-	void setHit();
+	void handleCollision(Player* obj);
 };
 

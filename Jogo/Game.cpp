@@ -39,7 +39,7 @@ void Game::processEvents()
         {
             
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
-                gameState.setGameState(1);
+                gameState.setGameState(2);
         }
         else {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
@@ -50,17 +50,23 @@ void Game::processEvents()
 
 void Game::update()
 {   
-    if (gameState.getGameState() == 1 && player.getLife() > 0)
-    {
-        stage1.update();
-    }
-    else if (gameState.getGameState() == 2 && player.getLife() > 0)
-    {
-        stage2.update();
-    }
-    else if (gameState.getGameState() == 3 && player.getLife() > 0)
-    {
-        stage3.update();
+    if (player.getLife() > 0) {
+        if (gameState.getGameState() != stateChanged) {
+            changeStage();
+        }
+        stateChanged = gameState.getGameState();
+        if (gameState.getGameState() == 1)
+        {
+            stage1.update();
+        }
+        else if (gameState.getGameState() == 2)
+        {
+            stage2.update();
+        }
+        else if (gameState.getGameState() == 3)
+        {
+            stage3.update();
+        }
     }
 }
 
@@ -94,5 +100,21 @@ void Game::run()
         processEvents();
         update();
         render();
+    }
+}
+
+void Game::changeStage()
+{
+    if (gameState.getGameState() == 1)
+    {
+        stage1.setPlayerPosition(50, 50);
+    }
+    else if (gameState.getGameState() == 2)
+    {
+        stage2.setPlayerPosition(0, 50);
+    }
+    else if (gameState.getGameState() == 3)
+    {
+        stage3.setPlayerPosition(1200, 750);
     }
 }
