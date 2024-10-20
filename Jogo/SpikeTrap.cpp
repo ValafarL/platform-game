@@ -1,68 +1,56 @@
 #include "SpikeTrap.h"
 
-SpikeTrap::SpikeTrap()
+SpikeTrap::SpikeTrap(sf::RenderWindow* window, int posX, int posY, float startDelay)
+	:Trap(window)
 {
+	this->startDelay = startDelay;
 	char nome[50] = "";
 	initTexture(nome);
-	initSprite(1, 1, 0, 0, 140, 15, 600, 203);
 	body.setColor(sf::Color::Green);
-	spikeFrame = 0;
-	spikeUp = false;
-	damage = 2;
+	trapOn = false;
+	canHit = false;
+	spikeClock.restart();
+	initSprite(1, 1, 0, 0, WIDHT, HEIGHT, posX, posY);
 }
 
 SpikeTrap::~SpikeTrap()
 {
 }
 
-bool SpikeTrap::update()
+void SpikeTrap::render() {
+	if (trapOn) {
+		drawBody();
+	}
+}
+void SpikeTrap::update()
 {
-	spikeFrame = spikeFrame + 1;
-	if (spikeFrame >= 30)
-	{
-		if (spikeUp == true)
-		{
-			spikeUp = false;
+	if (startDelayComplete) {
+		if (trapOn) {
+			if (spikeClock.getElapsedTime().asSeconds() > timeOnInSec) {
+				spikeClock.restart();
+				trapOn = false;
+				canHit = false;
+			}
 		}
-		else
-		{
-			spikeUp = true;
+		else {
+			if (spikeClock.getElapsedTime().asSeconds() > timeOffInSec) {
+				spikeClock.restart();
+
+				trapOn = true;
+				canHit = true;
+			}
 		}
-		spikeFrame = 0;
 	}
-	if (spikeUp == true)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-
-}
-
-int SpikeTrap::getDamage()
-{
-	return damage;
-}
-
-void SpikeTrap::knockback(sf::Sprite * pBody)
-{
-	if (pBody->getGlobalBounds().left + (pBody->getGlobalBounds().width / 2)
-		< this->body.getGlobalBounds().left + (this->body.getGlobalBounds().width / 2))
-	{
-		pBody->move(sf::Vector2f((this->body.getGlobalBounds().left - (pBody->getGlobalBounds().left
-			+ pBody->getGlobalBounds().width + 30)), 0));
-
-	}
-	else
-	{
-		pBody->move(sf::Vector2f(((this->body.getGlobalBounds().left + 
-			this->body.getGlobalBounds().width + 30)- (pBody->getGlobalBounds().left)), 0));
+	else if(spikeClock.getElapsedTime().asSeconds() > startDelay) {
+		startDelayComplete = true;
+		spikeClock.restart();
 	}
 }
 
-bool SpikeTrap::getSpikeUp()
+void SpikeTrap::handleCollision(Player* obj)
 {
-	return spikeUp;
+	if (canHit) {
+		obj->damageTaken(DAMAGE);
+		canHit = false;
+	}
 }

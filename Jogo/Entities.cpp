@@ -1,10 +1,10 @@
 #include "Entities.h"
 
-Entities::Entities():
+Entities::Entities(sf::RenderWindow* window):
 	texture(),
 	body()
 {
-	window = NULL;
+	this->window = window;
 }
 
 Entities::~Entities()
@@ -56,4 +56,20 @@ void Entities::setPath(const  char *pPath)
 char* Entities::getPath()
 {
 	return path;
+}
+
+float Entities::getOldX()
+{
+	return oldX;
+}
+
+float Entities::getOldY()
+{
+	return oldY;
+}
+
+void Entities::updatePosition()
+{
+	oldX = body.getPosition().x;
+	oldY = body.getPosition().y;
 }

@@ -1,151 +1,43 @@
 #include "Stage1.h"
 
-Stage1::Stage1():
-    enemyList(),
-    spike(),
-    fireball(),
-    lightning()
+Stage1::Stage1(sf::RenderWindow* window, Player* p)
+    : Stage(p)
 {
+    this->window = window;
+    player = p;
+    warrior = new EnemyWarrior(window, 500, 300, 200, 900, player);
+    warrior2 = new EnemyWarrior(window, 600, 300, 400, 1100, player);
+    warrior3 = new EnemyWarrior(window, 300, 550, 200, 1100, player);
+    warrior4 = new EnemyWarrior(window, 600, 550, 200, 1100, player);
+    warrior5 = new EnemyWarrior(window, 900, 550, 200, 1100, player);
+    tile1 = new Tiles(window, 1280, 50, 0, 718);
+    tile2 = new Tiles(window, 1130, 50, 150, 468);
+    tile3 = new Tiles(window, 1130, 50, 0, 218);
+    portalTC = new Portal(window);
+    spike = new SpikeTrap(window, 800, 203);
+    spike2 = new SpikeTrap(window, 500, 203);
+    spike3 = new SpikeTrap(window, 450, 705);
 
-    warrior = NULL;
-    warrior = new EnemyWarrior();
-    archer = NULL;
-    archer = new EnemyArcher();
+    portalTC->initSprite(1, 1, 0, 0, 130, 120, 1100, 595);
+    collisions.setWindow(window);
+
     enemyList.includeElement(warrior);
-    enemyList.includeElement(archer);
+    enemyList.includeElement(warrior2);
+    enemyList.includeElement(warrior3);
+    enemyList.includeElement(warrior4);
+    enemyList.includeElement(warrior5);
+    groundList.includeElement(tile1);
+    groundList.includeElement(tile2);
+    groundList.includeElement(tile3);
+    trapList.includeElement(spike);
+    trapList.includeElement(spike2);
+    trapList.includeElement(spike3);
+
+    NEXT_STAGE = 2;
+    portal = portalTC;
 }
 
 Stage1::~Stage1()
 {
 }
 
-void Stage1::createScenario()
-{
-    Element<Characters>* pAux;
-    Characters* pCha;
-    pAux = enemyList.getFirst();
-    while (pAux != NULL)
-    {
-        pCha = pAux->getElement();
-        pCha->setWindow(window);
-        pCha->setPlayerBody(player->getBody());
-        pCha->setPlayer(player);
-        pAux = pAux->getNext();
-    }
-    collisions.setWindow(window);
-
-    spike.setWindow(window);
-    fireball.setWindow(window);
-    lightning.setWindow(window);
-
-    tile1.setWindow(window);
-    tile2.setWindow(window);
-    tile3.setWindow(window);
-
-    tile1.createTile(1, 1, 0, 0, window->getSize().x, 50, 0, window->getSize().y - 50);
-    tile2.createTile(1, 1, 0, 0, window->getSize().x - 150, 50, 150, window->getSize().y - 300);
-    tile3.createTile(1, 1, 0, 0, window->getSize().x - 150, 50, 0, window->getSize().y - 550);
-}
-
-void Stage1::render()
-{
-    if (spike.update())
-    {
-        spike.drawBody();
-    }
-    fireball.drawBody();
-    if (lightning.update())
-    {
-        lightning.drawBody();
-    }
-    
-    tile1.drawBody();
-    tile2.drawBody();
-    tile3.drawBody();
-
-    player->render();
-    player->hpBar();
-    player->attack2();
-    Element<Characters>* pAux;
-    Characters* pChar;
-
-    pAux = enemyList.getFirst();
-    while (pAux != NULL)
-    {
-        pChar = pAux->getElement();
-        if (pChar->getLife() > 0)
-        {
-            pChar->drawBody();
-            pChar->render();
-        }
-        pAux = pAux->getNext();
-    }
-}
-
-void Stage1::update()
-{
-
-    player->update();
-    fireball.update();
-    Element<Characters>* pAux;
-    Characters* pChar;
-    pAux = enemyList.getFirst();
-    while (pAux != NULL)
-    {
-        pChar = pAux->getElement();
-        if (pChar->getLife() <= 0)
-        {
-            Element <Characters>* pAux2 = pAux->getNext();
-            pChar->dead();
-            enemyList.remove(pAux);
-            pAux = pAux2;
-        }
-        else
-        {
-
-            collisions.collidingWith(player->getBody(), pChar->getBody());
-            pChar->update();
-            collisions.collidingWith(pChar->getBody(), player->getBody());
-            collisions.collidingWith(pChar->getBody(), tile1.getBody());
-            collisions.collidingWith(pChar->getBody(), tile2.getBody());
-            collisions.collidingWith(pChar->getBody(), tile3.getBody());
-            collisions.windowCollision(pChar->getBody());
-            pChar->moveTo(player->getBody(), player);
-            pAux = pAux->getNext();
-        }
-
-    }
-    if (collisions.collideObject(player->getBody(), fireball.getBody()))
-    {
-        player->damageTaken(fireball.getDamage());
-        fireball.setHit();
-    }
-    if (collisions.collideObject(player->getBody(), spike.getBody()) && spike.getSpikeUp())
-    {
-        player->damageTaken(spike.getDamage());
-        spike.knockback(player->getBody());
-    }
-    if (collisions.collideObject(player->getBody(), lightning.getBody()) && lightning.getLightningOn())
-    {
-        player->damageTaken(lightning.damage());
-        lightning.setHit(player->getBody());
-        lightning.shock(player->getBody());
-    }
- 
-    player->jumpCollision(tile1.getBody());
-    player->jumpCollision(tile2.getBody());
-    player->jumpCollision(tile3.getBody());
-
-    collisions.collidingWith(player->getBody(), tile1.getBody());
-    collisions.collidingWith(player->getBody(), tile2.getBody());
-    collisions.collidingWith(player->getBody(), tile3.getBody());
-
-    collisions.windowCollision(player->getBody());
-
-    player->isOnGround();
-}
-
-void Stage1::setPlayer(Player* player)
-{
-    this->player = player;
-}

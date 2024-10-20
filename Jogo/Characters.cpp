@@ -1,18 +1,11 @@
 #include "Characters.h"
 
-Characters::Characters()
+Characters::Characters(sf::RenderWindow* window, Player* player)
+	:Entities(window)
 {
-	damage = 1;
-	bodySide = true;
-	jumping = false;
-	onGround = false;
-	vJump = 80;
-	vGravity = 10.0;
-	speed = 0.0;
-	life = 0;
+	this->player = player;
 	jumpingTimer.restart();
-	attacking = false;
-	playerBody = NULL;
+	playerBody = player->getBody();
 }
 
 Characters::~Characters()
@@ -21,97 +14,40 @@ Characters::~Characters()
 
 void Characters::render()
 {
-	if (attacking == true)
+	drawBody();
+	if (this->attacking == true)
 	{
-		window->draw(attackSprite);
-		attacking = false;
+		window->draw(this->attackSprite);
 	}
 }
 
 void Characters::update()
 {
-	gravity();
-	move();
+	this->gravity();
+	this->patrol();
 }
 
-void Characters::move()
-{
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && onGround == true)
-	{
-		jumping = true;
-	}
-	if (jumping)
-	{
-		jumpingUp();
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-	{
-		body.move(sf::Vector2f(0.f, getSpeed()));
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-	{
-		body.move(sf::Vector2f(getSpeed(), 0.f));
-		bodySide = true;
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-	{
-		body.move(sf::Vector2f(-getSpeed(), 0.f));
-		bodySide = false;
-	}
-}
 
-void Characters::moveTo(sf::Sprite* pBody, Player * player)
+void Characters::verifyPlayerInATTRange()
 {
-	if (body.getGlobalBounds().left - (body.getGlobalBounds().width * 6) <
-		pBody->getGlobalBounds().left + pBody->getGlobalBounds().width && pBody->getPosition().x <= 
-		body.getGlobalBounds().left && body.getGlobalBounds().top - body.getGlobalBounds().height < pBody->getGlobalBounds().top
-		&& body.getGlobalBounds().top + body.getGlobalBounds().height + 20 >= pBody->getGlobalBounds().top + pBody->getGlobalBounds().height)
+	if (body.getGlobalBounds().top - body.getGlobalBounds().height < playerBody->getGlobalBounds().top && 
+		body.getGlobalBounds().top + body.getGlobalBounds().height + 20 >= playerBody->getGlobalBounds().top + playerBody->getGlobalBounds().height &&
+		((body.getGlobalBounds().left < playerBody->getGlobalBounds().left &&
+			playerBody->getGlobalBounds().left <= body.getGlobalBounds().left + body.getGlobalBounds().width + attackRange)
+			||
+			(body.getGlobalBounds().left > playerBody->getGlobalBounds().left &&
+				playerBody->getGlobalBounds().left >= body.getGlobalBounds().left - attackRange)))
 	{
-		if (body.getPosition().x > pBody->getPosition().x + pBody->getGlobalBounds().width + attackRange)
-		{
-			body.move(-speed, 0);
-			bodySide = false;
-		}
-		else
-		{
-			bodySide = false;
-			//player->damageTaken(getDamage());
+		if (body.getPosition().x > playerBody->getPosition().x && bodySide == false) {
 			this->attack();
 		}
-		cout << "ARROZ DOCE" << endl;
-	}
-	if ((body.getGlobalBounds().left + body.getGlobalBounds().width )+ (body.getGlobalBounds().width * 6) >
-		pBody->getGlobalBounds().left  && pBody->getPosition().x >= body.getGlobalBounds().left
-		&& body.getGlobalBounds().top - body.getGlobalBounds().height < pBody->getGlobalBounds().top
-		&& body.getGlobalBounds().top + body.getGlobalBounds().height + 20 >= pBody->getGlobalBounds().top + pBody->getGlobalBounds().height)
-	{
-		if (body.getPosition().x + body.getGlobalBounds().width <  (pBody->getPosition().x - attackRange))
-		{
-			body.move(speed, 0);
-			bodySide = true;
-		}
-		else
-		{
-			//player->damageTaken(getDamage());
-			bodySide = true;
+		else if (body.getPosition().x < playerBody->getPosition().x && bodySide == true) {
 			this->attack();
 		}
 	}
-}
-
-void Characters::setSpeed(float sP)
-{
-	speed = sP;
-}
-
-float Characters::getSpeed()
-{
-	return speed;
-}
-
-void Characters::setPosition(float x, float y)
-{
-	body.setPosition(sf::Vector2f(x, y));
+	else {
+		attacking = false;
+	}
 }
 
 void Characters::gravity()
@@ -135,9 +71,29 @@ void Characters::jumpingUp()
 	}
 }
 
+void Characters::patrol()
+{
+	if (patrolLeft != patrolRight && followPlayer == false) {
+		if (body.getGlobalBounds().left < patrolLeft) {
+			patrolSide = true;
+		}
+		else if ((body.getGlobalBounds().left + body.getGlobalBounds().width) > patrolRight) {
+			patrolSide = false;
+		}
+		if (patrolSide == true) {
+			body.move(sf::Vector2f(speed, 0.f));
+			bodySide = true;
+		}
+		else {
+			body.move(sf::Vector2f(-speed, 0.f));
+			bodySide = false;
+		}
+	}
+}
+
 void Characters::setLife(int cLife)
 {
-	life = cLife;
+	this->life = cLife;
 }
 
 void Characters::setPlayerBody(sf::Sprite* playerBody)
@@ -171,6 +127,10 @@ void Characters::damageTaken(int damage)
 }
 
 void Characters::attack()
+{
+}
+
+void Characters::updateAttack()
 {
 }
 

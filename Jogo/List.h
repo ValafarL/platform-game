@@ -140,31 +140,27 @@ inline Element<TYPE>* List<TYPE>::getFirst()
 template<class TYPE>
 inline void List<TYPE>::remove(Element<TYPE>* pElement)
 {
-	if (pElement != NULL)
+	if (pElement)
 	{
 		if (pElement->getPrev() == NULL)
 		{
-			pFirst->setElement(NULL);
-			pFirst->setNext(NULL);
-			pFirst = NULL;
-			if (pElement->getNext() != NULL)
+			pFirst = pElement->getNext();
+			if (pFirst)
 			{
-				pFirst = pElement->getNext();
 				pFirst->setPrev(NULL);
 			}
-			delete(pElement);
+			delete pElement;
 		}
 		else
 		{
-			Element<TYPE>* pAux;
-			if (pElement->getNext() != NULL)
+			Element<TYPE>* pPrev = pElement->getPrev();
+			Element<TYPE>* pNext = pElement->getNext();
+			if (pNext)
 			{
-				pAux = pElement->getNext();
-				pAux->setPrev(pElement->getPrev());
+				pNext->setPrev(pPrev);
 			}
-			pAux = pElement->getPrev();
-			pAux->setNext(pElement->getNext());
-			delete(pElement);
+			pPrev->setNext(pNext);
+			delete pElement;
 		}
 	}
 }

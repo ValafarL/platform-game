@@ -1,8 +1,11 @@
 #include "Tiles.h"
 
-Tiles::Tiles()
+Tiles::Tiles(sf::RenderWindow* window, int widht, int height, int posX, int posY)
+	:Entities(window)
 {
-	
+	initTexture(this->getPath());
+	initSprite(1, 1, 0, 0, widht, height, posX, posY);
+
 }
 
 Tiles::~Tiles()

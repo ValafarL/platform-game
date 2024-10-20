@@ -1,13 +1,19 @@
 #pragma once
 #include "Characters.h"
-#include "Animation.h"
-class EnemyWarrior: public Characters, public Animation
+class EnemyWarrior: public Characters
 {
 private:
+	bool canAttack = true;
+	sf::Clock ACooldownClock;
+	float patrolPath;
+	const int HEIGHT = 100;
+	const int WIDHT = 50;
 
 public:
-	EnemyWarrior();
+	EnemyWarrior(sf::RenderWindow* window, int posX, int posY, int patrolLeft, int patrolRight, Player* player);
 	~EnemyWarrior();
-	void attack();
+	void attack() override;
+	void updateAttack() override;
+	void attackingSide();
 };
 

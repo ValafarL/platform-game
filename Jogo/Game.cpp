@@ -2,14 +2,21 @@
 
 Game::Game() :
     window(sf::VideoMode(1280, 768), "Game"),
-    gameState()
+    stage1(&window, &player),
+    stage2(&window, &player),
+    stage3(&window, &player),
+    gameState(),
+    player(&window)
 {
+
     window.setFramerateLimit(60);
     player.setWindow(&window);
     menu.setWindow(&window);
-    stage1.setWindow(&window);
-    stage1.setPlayer(&player);
-    stage1.createScenario();
+    
+    stage1.setGameState(&gameState);
+    stage2.setGameState(&gameState);
+    stage3.setGameState(&gameState);
+    
     menu.createMenu();
 }
 
@@ -34,8 +41,7 @@ void Game::processEvents()
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
                 gameState.setGameState(1);
         }
-        else if (gameState.getGameState() == 1)
-        {
+        else {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 gameState.setGameState(0);
         }
@@ -44,10 +50,17 @@ void Game::processEvents()
 
 void Game::update()
 {   
-    if (gameState.getGameState() == 1)
+    if (gameState.getGameState() == 1 && player.getLife() > 0)
     {
         stage1.update();
-        cout << "CARALHO" << endl;
+    }
+    else if (gameState.getGameState() == 2 && player.getLife() > 0)
+    {
+        stage2.update();
+    }
+    else if (gameState.getGameState() == 3 && player.getLife() > 0)
+    {
+        stage3.update();
     }
 }
 
@@ -62,6 +75,14 @@ void Game::render()
     else if (gameState.getGameState() == 1)
     {
         stage1.render();
+    }
+    else if (gameState.getGameState() == 2)
+    {
+        stage2.render();
+    }
+    else if (gameState.getGameState() == 3)
+    {
+        stage3.render();
     }
     window.display();
 }

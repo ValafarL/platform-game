@@ -1,87 +1,60 @@
 #include "LightningTrap.h"
 
-LightningTrap::LightningTrap()
+LightningTrap::LightningTrap(sf::RenderWindow* window, int posX, int posY)
+	:Trap(window)
 {
 	char nome[50] = "";
 	initTexture(nome);
 	initSprite(1, 1, 0, 0, 150, 20, 0, 490);
-	body.setColor(sf::Color::Cyan);
-	lightningFrame = 0;
-	lightningOn = false;
-	hit = false;
-	shockFrame = 0;
+	body.setColor(sf::Color::Magenta);
+	trapOn = false;
+	canHit = false;
+	lightningClock.restart();
+	initSprite(1, 1, 0, 0, WIDHT, HEIGHT, posX, posY);
 }
 
 LightningTrap::~LightningTrap()
 {
 }
 
-bool LightningTrap::update()
+void LightningTrap::render() {
+	if (trapOn) {
+		drawBody();
+	}
+}
+void LightningTrap::update()
 {
-	lightningFrame = lightningFrame + 1;
-	if (lightningFrame >= 120)
-	{
-		if (lightningOn == true)
-		{
-			lightningOn = false;
+	if (trapOn) {
+		if (lightningClock.getElapsedTime().asSeconds() > timeOnInSec) {
+			lightningClock.restart();
+			trapOn = false;
+			canHit = false;
 		}
-		else
-		{
-			lightningOn = true;
-			hit = false;
+	}
+	else {
+		if (lightningClock.getElapsedTime().asSeconds() > timeOffInSec) {
+			lightningClock.restart();
+			trapOn = true;
+			canHit = true;
 		}
-		lightningFrame = 0;
-	}
-	if (lightningOn == true)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
 	}
 }
 
-void LightningTrap::shock(sf::Sprite* obj)
+void LightningTrap::handleCollision(Player* obj)
 {
-	if (shockFrame <= 60)
-	{
-		obj->setPosition(sf::Vector2f(bodyPosition.x, bodyPosition.y - 10));
+	if (canHit) {
+		obj->damageTaken(DAMAGE);
+		canHit = false;
 	}
-	else
+	shock(obj);
+}
+
+void LightningTrap::shock(Player* obj)
+{
+	if (trapOn)
 	{
-		shockFrame = 0;
+		obj->isShocked = true;
 	}
 }
 
-int LightningTrap::damage()
-{
-	if (hit == false)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-	
-}
 
-bool LightningTrap::getLightningOn()
-{
-	return lightningOn;
-}
-
-void LightningTrap::setHit(sf::Sprite* obj)
-{
-	if (hit == false)
-	{
-		hit = true;
-		bodyPosition = obj->getPosition();
-	}
-	else
-	{
-		hit = true;
-	}
-	
-}

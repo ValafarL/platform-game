@@ -1,20 +1,24 @@
 #pragma once
-#include "Entities.h"
-class LightningTrap : public Entities
+#include "Trap.h"
+#include "Player.h"
+
+class LightningTrap : public Trap
 {
 private:
-	int lightningFrame;
-	bool lightningOn;
-	bool hit;
+	const int DAMAGE = 1;
+	const int timeOnInSec = 2;
+	const int timeOffInSec = 1;
 	sf::Vector2f bodyPosition;
-	int shockFrame;
+	sf::Clock lightningClock;
+	const int HEIGHT = 15;
+	const int WIDHT = 128;
+
 public:
-	LightningTrap();
+	LightningTrap(sf::RenderWindow* window, int posX, int posY);
 	~LightningTrap();
-	bool update();
-	void shock(sf::Sprite* obj);
-	int damage();
-	bool getLightningOn();
-	void setHit(sf::Sprite* obj);
+	void render();
+	void update();
+	void handleCollision(Player* obj);
+	void shock(Player* obj);
 };
 

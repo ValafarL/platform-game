@@ -1,29 +1,20 @@
 #include "Player.h"
-Player::Player()
+Player::Player(sf::RenderWindow* window)
+	:Entities(window)
 {
-	bodySide = true;
-	jumping = false;
-	onGround = false;
-	vJump = 80;
-	vGravity = 10.0;
-	speed = 0.0;
-	life = 0;
 	oldPosition = sf::Vector2f(0, 0);
-	//jumpingTimer.restart();
-	attacking = false;
 
 	char nome[50] = "texture/player";
 	initTexture(nome);
 	initSprite(1, 1, 0, 0, 50, 100, 0, 0);
 	body.setColor(sf::Color::Blue);
-	setSpeed(7.0);
-	life = 5;
-	lifePercent = 1;
-	maxHp = 5;
 	if (!attackTexture.loadFromFile("aa"))
 	{
 		cout << "FAILED LOADING PNG" << endl;
 	}
+	attackCooldown = 0.2;
+	attackDuration = 0.2;
+	ACooldownClock.restart();
 
 	frontHpBar.setSize(sf::Vector2f(200* lifePercent, 20));
 	frontHpBar.setFillColor(sf::Color::Red);
@@ -33,46 +24,45 @@ Player::Player()
 	backHpBar.setPosition(10, 10);
 	backHpBar.setFillColor(sf::Color(25, 25, 25, 200));
 
-	attackSprite.setTexture(attackTexture);
-	attackSprite.setTextureRect(sf::IntRect(0, 0, 60, 10));
-	attackSprite.setScale(1, 1);
-	attackSprite.setColor(sf::Color::Blue);
+	attackArea.setTexture(attackTexture);
+	attackArea.setTextureRect(sf::IntRect(0, 0, 60, 10));
+	attackArea.setScale(1, 1);
+	attackArea.setColor(sf::Color::Blue);
+	oldX = body.getPosition().x;
+	oldY = body.getPosition().y;
 }
 
 Player::~Player()
 {
 }
 
-void Player::initTexture(char* path)
-{
-	if (!texture.loadFromFile(path))
-	{
-		cout << "FAILED LOADING PNG" << endl;
-	}
-}
-
-void Player::initSprite(int sX, int sY, int left, int top, int widht, int high, float xPos, float yPos)
-{
-	body.setTexture(texture);
-	body.setTextureRect(sf::IntRect(left, top, widht, high));
-	body.setScale(sX, sY);
-	body.setPosition(xPos, yPos);
-}
-
 void Player::render()
 {
-	if (attacking == true)
+	window->draw(backHpBar);
+	window->draw(frontHpBar);
+	if (ACooldownClock.getElapsedTime().asSeconds() <= attackCooldown && attacking == true)
 	{
-		window->draw(attackSprite);
-		attacking = false;
+		window->draw(attackArea);
 	}
 	window->draw(body);
 }
 
 void Player::update()
 {
-	gravity();
-	move();
+	enterPortal = false;
+	hpBar();
+	if (ACooldownClock.getElapsedTime().asSeconds() <= attackCooldown && attacking == true)
+	{
+		attackSide();
+	}
+	else {
+		attacking = false;
+	}
+	if (!isShocked) {
+		gravity();
+		handleKeysPressed();
+	}
+	isShocked = false;
 }
 void Player::hpBar()
 {
@@ -82,13 +72,10 @@ void Player::hpBar()
 		lifePercent = 0;
 	}
 	sf::RenderWindow* window = getWindow();
-	cout << lifePercent << endl;
 	frontHpBar.setSize(sf::Vector2f(200 * lifePercent, 20));
-	window->draw(backHpBar);
-	window->draw(frontHpBar);
 }
 
-void Player::move()
+void Player::handleKeysPressed()
 {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && onGround == true)
 	{
@@ -96,43 +83,53 @@ void Player::move()
 	}
 	if (jumping)
 	{
-		jumpingUp();
+		isJumping();
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 	{
-		body.move(sf::Vector2f(0.f, getSpeed()));
+		enterPortal = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
-		body.move(sf::Vector2f(getSpeed(), 0.f));
+		move(speed, 0.f);
 		bodySide = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
-		body.move(sf::Vector2f(-getSpeed(), 0.f));
+		move(-speed, 0.f);
 		bodySide = false;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+	{
+		attack2();
 	}
 }
 
-bool Player::attack2()
+void Player::move(float x, float y)
 {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-	{
-		if (bodySide)
-		{
-			attackSprite.setPosition(body.getGlobalBounds().left + body.getGlobalBounds().width,
-				(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
-			window->draw(attackSprite);
-		}
-		else if (!bodySide)
-		{
-			attackSprite.setPosition(body.getGlobalBounds().left - (attackSprite.getGlobalBounds().width),
-				(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
-			window->draw(attackSprite);
-		}
-		return true;
+	body.move(sf::Vector2f(x, y));
+}
+
+void Player::attack2()
+{
+	if (ACooldownClock.getElapsedTime().asSeconds() >= attackCooldown && attacking == false) {
+		attackSide();
+		ACooldownClock.restart();
+		attacking = true;
+		attackHit = false;
 	}
-	return false;
+}
+void Player::attackSide() {
+	if (bodySide)
+	{
+		attackArea.setPosition(body.getGlobalBounds().left + body.getGlobalBounds().width,
+			(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+	}
+	else
+	{
+		attackArea.setPosition(body.getGlobalBounds().left - (attackArea.getGlobalBounds().width),
+			(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+	}
 }
 
 void Player::setWindow(sf::RenderWindow* pWindow)
@@ -144,9 +141,10 @@ sf::RenderWindow* Player::getWindow()
 {
 	return window;
 }
-sf::Sprite* Player::getBody()
+
+sf::Sprite* Player::getAttackArea()
 {
-	return &body;
+	return &attackArea;
 }
 
 void Player::gravity()
@@ -154,7 +152,7 @@ void Player::gravity()
 	body.move(0, vGravity);
 }
 
-void Player::jumpingUp()
+void Player::isJumping()
 {
 	if (vJump >= 0)
 	{
@@ -172,22 +170,23 @@ void Player::jumpingUp()
 
 void Player::damageTaken(int damage)
 {
-	this->setLife(this->getLife() - damage);
+	this->life = this->life - damage;
 }
 
-void Player::setSpeed(float sP)
+void Player::dealDamageTo(sf::Sprite* body2)
 {
-	speed = sP;
 }
 
+/*
 void Player::setLife(int cLife)
 {
 	life = cLife;
 }
+*/
 
-float Player::getSpeed()
+void Player::setAttackingHit(bool hit)
 {
-	return speed;
+	attackHit = hit;
 }
 
 int Player::getLife()
@@ -200,9 +199,13 @@ int Player::getDamage()
 	return damage;
 }
 
+bool Player::getAttacking()
+{
+	return attacking;
+}
+
 void Player::isOnGround()
 {
-	cout << oldPosition.x<< " " << oldPosition.y << "   " << body.getPosition().x << " " << body.getPosition().y << endl;
 	if (oldPosition.y == body.getPosition().y)
 	{
 		onGround = true;
@@ -234,8 +237,19 @@ void Player::jumpCollision(sf::Sprite *body2)
 		}
 	}
 }
-
+/*
 bool Player::getJumping()
 {
 	return jumping;
+}
+*/
+
+bool Player::getAttackingHit()
+{
+	return attackHit;
+}
+
+bool Player::getEnterPortal()
+{
+	return enterPortal;
 }

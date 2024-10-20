@@ -3,10 +3,11 @@
 class Tiles: public Entities
 {
 private:
-	char path[50];
+	int height = 50;
+	int widht = 70;
 
 public:
-	Tiles();
+	Tiles(sf::RenderWindow* window,int widht, int height , int posX, int posY);
 	~Tiles();
 	void createTile(int sX, int sY, int left, int top, int widht, int high, float xPos, float yPos);
 };

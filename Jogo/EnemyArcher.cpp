@@ -1,22 +1,26 @@
 #include "EnemyArcher.h"
 
-EnemyArcher::EnemyArcher()
+EnemyArcher::EnemyArcher(sf::RenderWindow* window, int posX, int posY, int patrolLeft, int patrolRight, Player* player)
+	:Characters(window, player)
 {
 	char nome[50] = "";
 	initTexture(nome);
-	initSprite(1, 1, 0, 0, 50, 100, 200, 300);
 	body.setColor(sf::Color::Cyan);
-	setSpeed(5.0);
-	setLife(1);
-	arrowShot = false;
-	arrowV = 0;
-	damage = 1;
-	attackRange = 250;
-	timeShot = 0;
 	attackSprite.setTexture(attackTexture);
 	attackSprite.setTextureRect(sf::IntRect(0, 0, 60, 10));
 	attackSprite.setScale(1, 1);
 	attackSprite.setColor(sf::Color::Cyan);
+	initSprite(1, 1, 0, 0, WIDHT, HEIGHT, posX, posY);
+
+	life = 1;
+	speed = 5.0;
+	damage = 1;
+	attackRange = 1050;
+	this->patrolLeft = patrolLeft;
+	this->patrolRight = patrolRight;
+	charClass = "archer";
+	ACooldownClock.restart();
+
 }
 
 EnemyArcher::~EnemyArcher()
@@ -25,8 +29,9 @@ EnemyArcher::~EnemyArcher()
 
 void EnemyArcher::attack()
 {
-	if(timeShot == 0)
+	if(ACooldownClock.getElapsedTime().asSeconds() >= 1)
 	{
+		ACooldownClock.restart();
 		if (bodySide)
 		{
 			arrowShot = true;
@@ -86,18 +91,9 @@ void EnemyArcher::update()
 	{
 		arrowCollide();
 	}
-
-	if (timeShot >= 60)
-	{
-		timeShot = 0;
-	}
-	else
-	{
-		timeShot = timeShot + 1;
-	}
 	gravity();
-	move();
 	travelArrow();
+	patrol();
 }
 
 void EnemyArcher::render()

@@ -1,36 +1,66 @@
 #include "EnemyWarrior.h"
 
-EnemyWarrior::EnemyWarrior()
+EnemyWarrior::EnemyWarrior(sf::RenderWindow* window, int posX, int posY, int patrolLeft, int patrolRight, Player* player)
+	:Characters(window, player)
 {
 	char nome[50] = "texture/knight/_idle";
 	initTexture(nome);
-	initSprite(1, 1, 0, 0, 50, 100, 200, 100);
 	body.setColor(sf::Color::Red);
-	setSpeed(5.0);
-	setLife(1);
+	life = 3;
+	speed = 5.0;
 	damage = 0;
+	attackCooldown = 1;
+	attackDuration = 0.5;
 	attackRange = 75;
+	ACooldownClock.restart();
+
 	attackSprite.setTexture(attackTexture);
 	attackSprite.setTextureRect(sf::IntRect(0, 0, 80, 10));
 	attackSprite.setScale(1, 1);
 	attackSprite.setColor(sf::Color::Blue);
+	initSprite(1, 1, 0, 0, WIDHT, HEIGHT, posX, posY);
+	this->patrolLeft = patrolLeft;
+	this->patrolRight = patrolRight;
+	charClass = "warrior";
 }
 
 EnemyWarrior::~EnemyWarrior()
 {
 }
 
-void EnemyWarrior::attack()
-{
-		if (bodySide)
-		{
-			attackSprite.setPosition(body.getGlobalBounds().left + body.getGlobalBounds().width,
-				(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+void EnemyWarrior::attack(){
+	if (attacking) {
+		attackingSide();		
+		if (ACooldownClock.getElapsedTime().asSeconds() > attackDuration) {
+			attacking = false;
 		}
-		else if (!bodySide)
-		{
-			attackSprite.setPosition(body.getGlobalBounds().left - (attackSprite.getGlobalBounds().width),
-				(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+	}
+	else {
+		if (ACooldownClock.getElapsedTime().asSeconds() >= attackCooldown) {
+			ACooldownClock.restart();
+			attacking = true;
+			player->damageTaken(getDamage());
 		}
-		attacking = true;
+	}
 }
+
+void EnemyWarrior::updateAttack(){
+	if (ACooldownClock.getElapsedTime().asSeconds() >= attackCooldown) {
+		canAttack = true;
+	}
+}
+
+void EnemyWarrior::attackingSide()
+{
+	if (bodySide)
+	{
+		attackSprite.setPosition(body.getGlobalBounds().left + body.getGlobalBounds().width,
+			(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+	}
+	else if (!bodySide)
+	{
+		attackSprite.setPosition(body.getGlobalBounds().left - (attackSprite.getGlobalBounds().width),
+			(body.getGlobalBounds().top + (body.getGlobalBounds().height) / 3));
+	}
+}
+

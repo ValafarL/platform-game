@@ -1,55 +1,69 @@
 #pragma once
 #include "stdfx.h"
-class Player
+#include "Entities.h"
+
+class Player: public Entities
 {
 private:
-	int damage;
-	bool bodySide; // true right, false left
-	float speed;
-	int life;
-	bool attacking;
+	int damage = 1;
+	bool bodySide = true; // true right, false left
+	float speed = 7.0;
+	int life = 5;
+	bool attacking = false;
+	bool attackHit = false;
 	int attackRange;
-	bool alive;
-	bool jumping;
-	bool onGround;
-	float vGravity;
-	float vJump;
+	bool alive = true;
+	bool jumping = false;
+	bool onGround = false;
+	float vGravity = 10.0f;
+	float vJump = 80;
+	sf::Clock ACooldownClock;
+	sf::Clock shockTime;
 
-	int maxHp;
-	float lifePercent;
+	float attackCooldown;
+	float attackDuration;
+	bool enterPortal = false;
+
+	const int maxHp = 5;
+	float lifePercent = 1;
 	sf::RectangleShape frontHpBar;
 	sf::RectangleShape backHpBar;
 
 	sf::Texture attackTexture;
-	sf::Sprite attackSprite;
+	sf::Sprite attackArea;
 	sf::Texture texture;
-	sf::Sprite body;
 	sf::RenderWindow* window;
 	sf::Vector2f oldPosition;
 	char path[50];
 public:
-	Player();
+	bool isShocked = false;
+	Player(sf::RenderWindow* window);
 	~Player();
-	void initTexture(char* path);
-	void initSprite(int sX, int sY, int left, int top, int widht, int high, float xPos, float yPos);
 	void render();
 	void update();
 	void hpBar();
-	void move();
-	bool attack2();
-	void setWindow(sf::RenderWindow* pWindow);
+	void handleKeysPressed();
+	void move(float x, float y);
+	void attack2();
+	void attackSide();
 	sf::RenderWindow* getWindow();
-	sf::Sprite* getBody();
+	sf::Sprite* getAttackArea();
 	void gravity();
-	void jumpingUp();
 	void damageTaken(int damage);
-	void setSpeed(float sP);
-	void setLife(int cLife);
-	float getSpeed();
+	void dealDamageTo(sf::Sprite* body2);
+	void isJumping();
+	
+	void setWindow(sf::RenderWindow* pWindow);
+	//void setLife(int cLife);
+	void setAttackingHit(bool hit);
+
 	int getLife();
 	int getDamage();
+	bool getAttacking();
+	//bool getJumping();
+	bool getAttackingHit();
+	bool getEnterPortal();
+
 	void isOnGround();
 	void jumpCollision(sf::Sprite* body2);
-	bool getJumping();
 };
-
